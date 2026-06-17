@@ -28,9 +28,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',sans-
 .hdr-btn:active{opacity:.6}
 .hdr-btn.add{background:var(--accent);color:var(--at);font-size:22px}
 .hdr-btn.share{background:var(--bg2);color:var(--text);font-size:16px}
-/* Новая кнопка доната */
 .hdr-btn.donate{background:var(--bg2);color:#ff3b30;font-size:18px}
-/* Кнопка канала */
 .hdr-btn.channel{background:#26A5E4;color:#fff;font-size:18px}
 /* ── LAYOUT ── */
 .main{padding-bottom:var(--nav)}
@@ -70,6 +68,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',sans-
 .card-btn:active{opacity:.6}
 .card-btn.e{background:var(--bg2);color:var(--text)}
 .card-btn.d{background:rgba(255,59,48,.1);color:var(--red)}
+.card-btn.link{background:rgba(36,129,204,.1);color:var(--accent);flex:0;padding:8px 12px}
 
 /* ── TOGGLE ── */
 .tog{position:relative;width:42px;height:26px;flex-shrink:0}
@@ -191,6 +190,26 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',sans-
 .loading{display:flex;align-items:center;justify-content:center;height:50vh;color:var(--hint);font-size:15px;gap:8px}
 @keyframes spin{to{transform:rotate(360deg)}}
 .spinner{width:20px;height:20px;border:2px solid var(--bg2);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite}
+
+/* ── TRANSACTION ITEMS ── */
+.trans-item{background:var(--bg);border-radius:var(--r);padding:12px 14px;display:flex;align-items:center;gap:10px}
+.trans-icon{font-size:20px;width:32px;text-align:center;flex-shrink:0}
+.trans-info{flex:1;min-width:0}
+.trans-name{font-size:15px;font-weight:500}
+.trans-meta{font-size:12px;color:var(--hint);margin-top:2px}
+.trans-amt{font-size:16px;font-weight:700;white-space:nowrap;flex-shrink:0}
+.trans-amt.income{color:var(--green)}
+.trans-amt.expense{color:var(--red)}
+.trans-acts{display:flex;gap:4px;flex-shrink:0}
+.month-nav{display:flex;align-items:center;gap:12px;justify-content:center;padding:8px 0}
+.month-nav button{background:var(--bg2);border:none;border-radius:50%;width:34px;height:34px;font-size:18px;cursor:pointer}
+.month-nav span{font-size:16px;font-weight:600;min-width:120px;text-align:center}
+.trans-totals{display:flex;gap:8px;justify-content:space-around;background:var(--bg);border-radius:var(--r);padding:10px 16px;margin-bottom:4px}
+.trans-totals div{text-align:center}
+.trans-totals .label{font-size:11px;color:var(--hint)}
+.trans-totals .num{font-size:18px;font-weight:700}
+.trans-totals .num.income{color:var(--green)}
+.trans-totals .num.expense{color:var(--red)}
 </style>
 </head>
 <body>
@@ -199,9 +218,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',sans-
 <header class="hdr" id="hdr">
   <div class="hdr-title" id="hdrTitle">💳 Мои Финансы</div>
   <button class="hdr-btn share" id="btnShare" onclick="onShare()" style="display:none">🔗</button>
-  <!-- Кнопка доната -->
   <button class="hdr-btn donate" onclick="openDonateLink()" title="Поддержать проект">❤️</button>
-  <!-- Кнопка Telegram-канала -->
   <button class="hdr-btn channel" onclick="openChannel()" title="Наш канал">💬</button>
   <button class="hdr-btn add" onclick="onAdd()">+</button>
 </header>
@@ -209,15 +226,15 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',sans-
 <!-- MAIN -->
 <main class="main">
   <div class="tab active" id="tabSubs"><div class="tab-body" id="listSubs"><div class="loading"><div class="spinner"></div>Загрузка…</div></div></div>
-  <div class="tab" id="tabExp"><div class="tab-body" id="listExp"><div class="loading"><div class="spinner"></div>Загрузка…</div></div></div>
+  <div class="tab" id="tabTrans"><div class="tab-body" id="listTrans"><div class="loading"><div class="spinner"></div>Загрузка…</div></div></div>
   <div class="tab" id="tabShop"><div class="tab-body" id="listShop"><div class="loading"><div class="spinner"></div>Загрузка…</div></div></div>
   <div class="tab" id="tabWish"><div class="tab-body" id="listWish"><div class="loading"><div class="spinner"></div>Загрузка…</div></div></div>
 </main>
 
 <!-- NAV -->
 <nav class="nav">
-  <button class="nav-btn active" data-t="Subs" onclick="goto('Subs')"><span class="nav-icon">💳</span><span class="nav-label">Открыть Финансы</span></button>
-  <button class="nav-btn" data-t="Exp" onclick="goto('Exp')"><span class="nav-icon">💸</span><span class="nav-label">Расходы</span></button>
+  <button class="nav-btn active" data-t="Subs" onclick="goto('Subs')"><span class="nav-icon">💳</span><span class="nav-label">Подписки</span></button>
+  <button class="nav-btn" data-t="Trans" onclick="goto('Trans')"><span class="nav-icon">💰</span><span class="nav-label">Доходы/Расходы</span></button>
   <button class="nav-btn" data-t="Shop" onclick="goto('Shop')"><span class="nav-icon">🛒</span><span class="nav-label">Покупки</span></button>
   <button class="nav-btn" data-t="Wish" onclick="goto('Wish')"><span class="nav-icon">🎁</span><span class="nav-label">Вишлист</span></button>
 </nav>
@@ -253,9 +270,8 @@ function openDonateLink() {
 }
 
 /* ────────────────────────────────── CHANNEL ── */
-// Замените 'ваш_канал' на username вашего Telegram-канала (например, 'my_finance')
 function openChannel() {
-    const channelUrl = 'https://t.me/shoguns_notes';  // ← СЮДА ВСТАВЬТЕ ССЫЛКУ НА КАНАЛ
+    const channelUrl = 'https://t.me/shoguns_notes';
     if (tg && tg.openLink) {
         tg.openLink(channelUrl);
     } else {
@@ -265,15 +281,16 @@ function openChannel() {
 
 /* ────────────────────────────────── STATE ── */
 const S = {
-  subs:[],exps:[],shops:[],wishes:[],
-  subP:'month',expP:'month',
-  tab:'Subs',editId:null,
-  wPriority:'normal',wHidePrice:false,wVisible:true,wMaxBook:1,
+  subs:[], exps:[], shops:[], wishes:[],
+  transactions:[],        // новый массив транзакций
+  subP:'month', transMonth: new Date(),  // текущий месяц для транзакций
+  tab:'Subs', editId:null,
+  wPriority:'normal', wHidePrice:false, wVisible:true, wMaxBook:1,
   pendingBookItem:null,
 };
 
 /* ────────────────────────────────── STORAGE ── */
-const K={subs:'subs_v3',exps:'exps_v1',shops:'shop_v1',wishes:'wish_v1'};
+const K={subs:'subs_v3', exps:'exps_v1', shops:'shop_v1', wishes:'wish_v1', trans:'trans_v1'};
 
 async function load(key){
   return new Promise(r=>{
@@ -295,10 +312,10 @@ function save(key,data){
 
 /* ────────────────────────────────── DEFAULTS ── */
 const DEF_SUBS=[
-  {id:'s1',name:'Телеграмм',   active:true,prices:{month:299, year:null,two_years:2990},sel:'two_years',note:'оплата либо в месяц, либо за 2 года'},
-  {id:'s2',name:'Яндекс Плюс',active:true,prices:{month:449, year:3490,two_years:6980},sel:'two_years',note:'оплата 2 раза в 2 года'},
-  {id:'s3',name:'VK Музыка',  active:true,prices:{month:199, year:1599,two_years:3198},sel:'two_years',note:'оплата 2 раза в 2 года'},
-  {id:'s4',name:'Делимобиль', active:true,prices:{month:390, year:4680,two_years:9360},sel:'month',    note:''},
+  {id:'s1',name:'Телеграмм',   active:true,prices:{month:299, year:null,two_years:2990},sel:'two_years',note:'оплата либо в месяц, либо за 2 года', link:'https://telegram.org'},
+  {id:'s2',name:'Яндекс Плюс',active:true,prices:{month:449, year:3490,two_years:6980},sel:'two_years',note:'оплата 2 раза в 2 года', link:'https://plus.yandex.ru'},
+  {id:'s3',name:'VK Музыка',  active:true,prices:{month:199, year:1599,two_years:3198},sel:'two_years',note:'оплата 2 раза в 2 года', link:'https://vk.com/music'},
+  {id:'s4',name:'Делимобиль', active:true,prices:{month:390, year:4680,two_years:9360},sel:'month',    note:'', link:'https://delimobil.ru'},
 ];
 
 /* ────────────────────────────────── INIT ── */
@@ -307,13 +324,47 @@ async function init(){
   if(hash.startsWith('#wl=')){const d=dec(hash.slice(4));if(d)showSVWish(d);}
   if(hash.startsWith('#sl=')){const d=dec(hash.slice(4));if(d)showSVShop(d);}
 
-  const [a,b,c,d]=await Promise.all([load(K.subs),load(K.exps),load(K.shops),load(K.wishes)]);
-  S.subs=a??DEF_SUBS; S.exps=b??[]; S.shops=c??[]; S.wishes=d??[];
-  rSubs();rExp();rShop();rWish();
+  const [a,b,c,d,e] = await Promise.all([
+    load(K.subs), load(K.exps), load(K.shops), load(K.wishes), load(K.trans)
+  ]);
+  S.subs = a ?? DEF_SUBS;
+  S.exps = b ?? [];
+  S.shops = c ?? [];
+  S.wishes = d ?? [];
+  S.transactions = e ?? [];
+
+  rSubs(); rTrans(); rShop(); rWish();
+  // Если есть старые расходы, можно перенести их в транзакции (опционально)
+  migrateExps();
+}
+
+// Перенос старых расходов (exps) в транзакции, если массив транзакций пуст
+function migrateExps(){
+  if(S.transactions.length === 0 && S.exps.length > 0){
+    const today = new Date();
+    const y = today.getFullYear(), m = String(today.getMonth()+1).padStart(2,'0'), d = String(today.getDate()).padStart(2,'0');
+    const dateStr = `${y}-${m}-${d}`;
+    S.exps.forEach(e => {
+      S.transactions.push({
+        id: uid(),
+        type: 'expense',
+        amount: e.amt,
+        category: 'Регулярный',
+        date: dateStr,
+        note: e.name + (e.note ? ' ('+e.note+')' : ''),
+        active: e.active !== false
+      });
+    });
+    // После переноса очищаем exps, чтобы не дублировать
+    S.exps = [];
+    save(K.exps, S.exps);
+    save(K.trans, S.transactions);
+    rTrans();
+  }
 }
 
 /* ────────────────────────────────── NAVIGATION ── */
-const TAB={Subs:{t:'💳 Подписки',share:false},Exp:{t:'💸 Расходы',share:false},Shop:{t:'🛒 Покупки',share:true},Wish:{t:'🎁 Вишлист',share:true}};
+const TAB={Subs:{t:'💳 Подписки',share:false}, Trans:{t:'💰 Доходы/Расходы',share:false}, Shop:{t:'🛒 Покупки',share:true}, Wish:{t:'🎁 Вишлист',share:true}};
 function goto(tab){
   S.tab=tab;
   document.querySelectorAll('.tab').forEach(e=>e.classList.remove('active'));
@@ -322,11 +373,11 @@ function goto(tab){
   document.getElementById('hdrTitle').textContent=TAB[tab].t;
   document.getElementById('btnShare').style.display=TAB[tab].share?'flex':'none';
 }
-function onAdd(){if(S.tab==='Subs')mSubs(null);else if(S.tab==='Exp')mExp(null);else if(S.tab==='Shop')mShop(null);else mWish(null);}
+function onAdd(){if(S.tab==='Subs')mSubs(null);else if(S.tab==='Trans')mTrans(null);else if(S.tab==='Shop')mShop(null);else mWish(null);}
 function onShare(){if(S.tab==='Shop')doShareShop();else doShareWish();}
 
 /* ══════════════════════════════════════════════════════════════
-   SUBSCRIPTIONS
+   SUBSCRIPTIONS (добавлена ссылка)
 ══════════════════════════════════════════════════════════════ */
 const PL={month:'Месяц',year:'1 год',two_years:'2 года'};
 function rSubs(){
@@ -351,6 +402,7 @@ function subCard(s){
     return `<button class="pill ${isA?'on':''} ${na?'na':''}" ${na?'disabled':`onclick="subP('${s.id}','${p}')"`}>
       ${PL[p]}<div class="pill-sub">${pr?fmt(pr)+' ₽':'—'}</div></button>`;
   }).join('');
+  const linkBtn = s.link ? `<button class="card-btn link" onclick="openLnk('${esc(s.link)}')">🔗</button>` : '';
   return `<div class="card ${s.active?'':'off'}">
     <div class="card-top">
       <label class="tog"><input type="checkbox" ${s.active?'checked':''} onchange="subTog('${s.id}',this.checked)"><span class="tog-tr"></span></label>
@@ -360,6 +412,7 @@ function subCard(s){
     <div class="pills">${pills}</div>
     ${s.note?`<div class="card-note">📌 ${esc(s.note)}</div>`:''}
     <div class="card-actions">
+      ${linkBtn}
       <button class="card-btn e" onclick="mSubs('${s.id}')">✏️ Изменить</button>
       <button class="card-btn d" onclick="delI('subs','${s.id}')">🗑 Удалить</button>
     </div></div>`;
@@ -380,6 +433,7 @@ function mSubs(id){
         <div><div class="pc-label">За 2 года</div><input class="fi" id="f2" type="number" inputmode="decimal" value="${s?.prices.two_years??''}" placeholder="0"></div>
       </div></div>
     <div class="field"><div class="fl">Заметка</div><input class="fi" id="fNote" value="${s?esc(s.note??''):''}" placeholder="Необязательно"></div>
+    <div class="field"><div class="fl">Ссылка на сайт</div><input class="fi" id="fLink" type="url" value="${s?esc(s.link??''):''}" placeholder="https://…"></div>
     <button class="btn-p" onclick="saveSubs()">Сохранить</button>
     <button class="btn-s" onclick="closeSheet()">Отмена</button>`);
 }
@@ -387,99 +441,164 @@ function saveSubs(){
   const n=q('fN').value.trim();if(!n){toast('Введи название');return;}
   const m=pn(q('fM').value),y=pn(q('fY').value),t=pn(q('f2').value);
   if(!m&&!y&&!t){toast('Укажи хотя бы одну цену');return;}
-  const note=q('fNote').value.trim();const prices={month:m,year:y,two_years:t};
-  if(S.editId){const s=S.subs.find(s=>s.id===S.editId);Object.assign(s,{name:n,prices,note});if(!prices[s.sel])s.sel=m?'month':y?'year':'two_years';}
-  else S.subs.push({id:uid(),name:n,active:true,prices,sel:m?'month':y?'year':'two_years',note});
+  const note=q('fNote').value.trim(); const link=q('fLink').value.trim();
+  const prices={month:m,year:y,two_years:t};
+  if(S.editId){const s=S.subs.find(s=>s.id===S.editId);Object.assign(s,{name:n,prices,note,link});if(!prices[s.sel])s.sel=m?'month':y?'year':'two_years';}
+  else S.subs.push({id:uid(),name:n,active:true,prices,sel:m?'month':y?'year':'two_years',note,link});
   save(K.subs,S.subs);closeSheet();rSubs();toast(S.editId?'Сохранено ✓':'Добавлено ✓');
 }
 
 /* ══════════════════════════════════════════════════════════════
-   EXPENSES
+   ТРАНЗАКЦИИ (доходы + расходы с датами)
 ══════════════════════════════════════════════════════════════ */
-const FL={month:'в месяц',week:'в неделю',year:'в год',once:'разово'};
-function rExp(){
-  const el=document.getElementById('listExp');
-  const act=S.exps.filter(e=>e.active);
-  const total=act.reduce((a,e)=>{
-    let m=e.freq==='month'?e.amt:e.freq==='week'?e.amt*4.33:e.freq==='year'?e.amt/12:0;
-    return a+(S.expP==='month'?m:S.expP==='year'?m*12:m*24);
-  },0);
-  const detail=act.slice(0,4).map(e=>e.name+': '+fmt(e.amt)+'₽ '+FL[e.freq]).join(' · ');
+function rTrans(){
+  const el=document.getElementById('listTrans');
+  const year = S.transMonth.getFullYear();
+  const month = S.transMonth.getMonth();
+  const monthStr = `${year}-${String(month+1).padStart(2,'0')}`;
+  // фильтруем транзакции за выбранный месяц
+  const monthTrans = S.transactions.filter(t => t.date && t.date.startsWith(monthStr));
+  const sorted = [...monthTrans].sort((a,b) => (a.date||'').localeCompare(b.date||''));
+  const incomes = sorted.filter(t => t.type === 'income');
+  const expenses = sorted.filter(t => t.type === 'expense');
+  const totalIncome = incomes.reduce((s,t) => s + t.amount, 0);
+  const totalExpense = expenses.reduce((s,t) => s + t.amount, 0);
+  const balance = totalIncome - totalExpense;
 
-  el.innerHTML=`<div class="sum-card">
-    <div class="sum-card-top">${act.length} из ${S.exps.length} активны</div>
-    <div class="sum-card-amt">${fmt(Math.round(total))} ₽</div>
-    <div class="sum-card-sub">${esc(detail)||'нет активных'}</div>
-    <div class="sum-tabs">
-      ${[['month','В месяц'],['year','За год'],['two_years','За 2 года']].map(([p,l])=>`
-        <button class="stab ${p===S.expP?'active':''}" onclick="setExpP('${p}')">${l}</button>`).join('')}
-    </div></div>`
-  +(S.exps.length?S.exps.map(e=>`
-    <div class="card ${e.active?'':'off'}">
-      <div class="card-top">
-        <label class="tog"><input type="checkbox" ${e.active?'checked':''} onchange="expTog('${e.id}',this.checked)"><span class="tog-tr"></span></label>
-        <span class="card-name">${esc(e.name)}</span>
-        <span class="freq-badge">${FL[e.freq]||e.freq}</span>
-        <span class="card-amt">${fmt(e.amt)} ₽</span>
+  // Заголовок с итогами
+  let html = `<div class="trans-totals">
+    <div><div class="label">Доходы</div><div class="num income">+${fmt(totalIncome)} ₽</div></div>
+    <div><div class="label">Расходы</div><div class="num expense">-${fmt(totalExpense)} ₽</div></div>
+    <div><div class="label">Баланс</div><div class="num" style="color:${balance>=0?'var(--green)':'var(--red)'}">${balance>=0?'+':'-'}${fmt(Math.abs(balance))} ₽</div></div>
+  </div>`;
+
+  // Навигация по месяцам
+  const monthNames = ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
+  html += `<div class="month-nav">
+    <button onclick="changeMonth(-1)">◀</button>
+    <span>${monthNames[month]} ${year}</span>
+    <button onclick="changeMonth(1)">▶</button>
+  </div>`;
+
+  if(sorted.length === 0){
+    html += `<div class="empty"><div class="empty-icon">💰</div><div class="empty-title">За этот месяц записей нет</div><div class="empty-sub">Нажми + чтобы добавить доход или расход</div></div>`;
+  } else {
+    sorted.forEach(t => {
+      const icon = t.type === 'income' ? '📈' : '📉';
+      const amtClass = t.type === 'income' ? 'income' : 'expense';
+      const sign = t.type === 'income' ? '+' : '-';
+      html += `<div class="trans-item">
+        <div class="trans-icon">${icon}</div>
+        <div class="trans-info">
+          <div class="trans-name">${esc(t.note || 'Без описания')}</div>
+          <div class="trans-meta">${t.category || 'Без категории'} · ${t.date || ''}</div>
+        </div>
+        <div class="trans-amt ${amtClass}">${sign}${fmt(t.amount)} ₽</div>
+        <div class="trans-acts">
+          <button class="icon-btn" onclick="mTrans('${t.id}')">✏️</button>
+          <button class="icon-btn" onclick="delI('transactions','${t.id}')">🗑</button>
+        </div>
+      </div>`;
+    });
+  }
+  el.innerHTML = html;
+}
+
+function changeMonth(delta){
+  const newDate = new Date(S.transMonth);
+  newDate.setMonth(newDate.getMonth() + delta);
+  S.transMonth = newDate;
+  rTrans();
+}
+
+function mTrans(id){
+  S.editId=id; const t = id ? S.transactions.find(t=>t.id===id) : null;
+  const today = new Date();
+  const defDate = t ? t.date : `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
+  openSheet(id?'Изменить запись':'Добавить запись',`
+    <div class="field"><div class="fl">Тип</div>
+      <div class="sel-group" id="typeGrp">
+        <button class="sel-btn ${t?.type==='income'?'on':''}" onclick="setTransType('income')">📈 Доход</button>
+        <button class="sel-btn ${t?.type==='expense'||!t?'on':''}" onclick="setTransType('expense')">📉 Расход</button>
       </div>
-      ${e.note?`<div class="card-note">📌 ${esc(e.note)}</div>`:''}
-      <div class="card-actions">
-        <button class="card-btn e" onclick="mExp('${e.id}')">✏️ Изменить</button>
-        <button class="card-btn d" onclick="delI('exps','${e.id}')">🗑 Удалить</button>
-      </div></div>`).join('')
-  :`<div class="empty"><div class="empty-icon">💸</div><div class="empty-title">Нет расходов</div><div class="empty-sub">Нажми + чтобы добавить</div></div>`);
-}
-function expTog(id,v){const e=S.exps.find(e=>e.id===id);if(e){e.active=v;save(K.exps,S.exps);rExp();}}
-function setExpP(p){S.expP=p;rExp();}
-
-function mExp(id){
-  S.editId=id;const e=id?S.exps.find(e=>e.id===id):null;
-  openSheet(id?'Изменить расход':'Добавить расход',`
-    <div class="field"><div class="fl">Название</div><input class="fi" id="fN" value="${e?esc(e.name):''}" placeholder="Например: Такси"></div>
-    <div class="g2">
-      <div class="field"><div class="fl">Сумма (₽)</div><input class="fi" id="fA" type="number" inputmode="decimal" value="${e?.amt??''}" placeholder="0"></div>
-      <div class="field"><div class="fl">Частота</div>
-        <select class="fi" id="fF">${['month','week','year','once'].map(f=>`<option value="${f}" ${e?.freq===f?'selected':''}>${FL[f]}</option>`).join('')}</select>
-      </div></div>
-    <div class="field"><div class="fl">Заметка</div><input class="fi" id="fNote" value="${e?esc(e.note??''):''}" placeholder="Необязательно"></div>
-    <button class="btn-p" onclick="saveExp()">Сохранить</button>
+    </div>
+    <div class="field"><div class="fl">Сумма (₽)</div><input class="fi" id="fAmt" type="number" inputmode="decimal" value="${t?t.amount:''}" placeholder="0"></div>
+    <div class="field"><div class="fl">Категория</div><input class="fi" id="fCat" value="${t?esc(t.category||''):''}" placeholder="Например: Еда, Транспорт"></div>
+    <div class="field"><div class="fl">Дата</div><input class="fi" id="fDate" type="date" value="${defDate}"></div>
+    <div class="field"><div class="fl">Описание</div><input class="fi" id="fNote" value="${t?esc(t.note||''):''}" placeholder="Что это?"></div>
+    <button class="btn-p" onclick="saveTrans()">Сохранить</button>
     <button class="btn-s" onclick="closeSheet()">Отмена</button>`);
+  // установим активный тип
+  window._transType = t?.type || 'expense';
+  highlightTransType();
 }
-function saveExp(){
-  const n=q('fN').value.trim();if(!n){toast('Введи название');return;}
-  const a=pn(q('fA').value);if(!a){toast('Укажи сумму');return;}
-  const f=q('fF').value,note=q('fNote').value.trim();
-  if(S.editId)Object.assign(S.exps.find(e=>e.id===S.editId),{name:n,amt:a,freq:f,note});
-  else S.exps.push({id:uid(),name:n,active:true,amt:a,freq:f,note});
-  save(K.exps,S.exps);closeSheet();rExp();toast(S.editId?'Сохранено ✓':'Добавлено ✓');
+function setTransType(type){ window._transType = type; highlightTransType(); }
+function highlightTransType(){
+  document.querySelectorAll('#typeGrp .sel-btn').forEach((b,i)=>{
+    const types = ['income','expense'];
+    b.classList.toggle('on', types[i] === window._transType);
+  });
+}
+function saveTrans(){
+  const amount = pn(q('fAmt').value);
+  if(!amount){toast('Укажи сумму'); return;}
+  const category = q('fCat').value.trim();
+  const date = q('fDate').value;
+  if(!date){toast('Укажи дату'); return;}
+  const note = q('fNote').value.trim();
+  const type = window._transType || 'expense';
+  if(S.editId){
+    const t = S.transactions.find(t=>t.id===S.editId);
+    if(t){ Object.assign(t, {type, amount, category, date, note}); }
+  } else {
+    S.transactions.push({id:uid(), type, amount, category, date, note, active:true});
+  }
+  save(K.trans, S.transactions);
+  closeSheet(); rTrans(); toast(S.editId?'Сохранено ✓':'Добавлено ✓');
 }
 
 /* ══════════════════════════════════════════════════════════════
-   SHOPPING LIST
+   SHOPPING LIST (с категориями)
 ══════════════════════════════════════════════════════════════ */
 function rShop(){
   const el=document.getElementById('listShop');
   if(!S.shops.length){el.innerHTML=`<div class="empty"><div class="empty-icon">🛒</div><div class="empty-title">Список пуст</div><div class="empty-sub">Нажми + чтобы добавить товар</div></div>`;return;}
-  const done=S.shops.filter(s=>s.chk).length,total=S.shops.length,pct=Math.round(done/total*100);
-  const sorted=[...S.shops.filter(s=>!s.chk),...S.shops.filter(s=>s.chk)];
-  el.innerHTML=`<div class="card" style="padding:12px 14px">
+  // Группировка по категориям
+  const cats = {};
+  S.shops.forEach(s => {
+    const cat = s.category || 'Без категории';
+    if(!cats[cat]) cats[cat] = [];
+    cats[cat].push(s);
+  });
+  const done = S.shops.filter(s=>s.chk).length, total=S.shops.length, pct=Math.round(done/total*100);
+  let html = `<div class="card" style="padding:12px 14px">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
       <span style="font-size:14px;font-weight:600">${done} из ${total} куплено</span>
       <span style="font-size:13px;color:var(--hint)">${pct}%</span></div>
-    <div class="prog-bar"><div class="prog-fill" style="width:${pct}%"></div></div></div>`
-  +sorted.map(item=>`
-    <div class="shop-item">
-      <div class="shop-chk ${item.chk?'done':''}" onclick="shopTog('${item.id}')"></div>
-      <div class="shop-info">
-        <div class="shop-name ${item.chk?'done':''}">${esc(item.name)}${item.qty?` <span style="color:var(--hint);font-weight:400">× ${esc(String(item.qty))}</span>`:''}</div>
-        ${item.note?`<div class="shop-meta">${esc(item.note)}</div>`:''}
-      </div>
-      ${item.photo?`<img class="shop-thumb" src="${esc(item.photo)}" onerror="this.style.display='none'" alt="">`:``}
-      <div class="shop-acts">
-        ${item.link?`<button class="icon-btn" onclick="openLnk('${esc(item.link)}')">🔗</button>`:''}
-        <button class="icon-btn" onclick="mShop('${item.id}')">✏️</button>
-        <button class="icon-btn" onclick="delI('shops','${item.id}')">🗑</button>
-      </div></div>`).join('');
+    <div class="prog-bar"><div class="prog-fill" style="width:${pct}%"></div></div></div>`;
+  // Сортируем категории
+  Object.keys(cats).sort().forEach(cat => {
+    const items = cats[cat];
+    const doneCat = items.filter(s=>s.chk).length;
+    html += `<div style="font-weight:600;font-size:14px;color:var(--hint);margin:12px 0 4px 4px">${esc(cat)} (${doneCat}/${items.length})</div>`;
+    const sortedItems = [...items.filter(s=>!s.chk), ...items.filter(s=>s.chk)];
+    sortedItems.forEach(item => {
+      html += `<div class="shop-item">
+        <div class="shop-chk ${item.chk?'done':''}" onclick="shopTog('${item.id}')"></div>
+        <div class="shop-info">
+          <div class="shop-name ${item.chk?'done':''}">${esc(item.name)}${item.qty?` <span style="color:var(--hint);font-weight:400">× ${esc(String(item.qty))}</span>`:''}</div>
+          ${item.note?`<div class="shop-meta">${esc(item.note)}</div>`:''}
+        </div>
+        ${item.photo?`<img class="shop-thumb" src="${esc(item.photo)}" onerror="this.style.display='none'" alt="">`:``}
+        <div class="shop-acts">
+          ${item.link?`<button class="icon-btn" onclick="openLnk('${esc(item.link)}')">🔗</button>`:''}
+          <button class="icon-btn" onclick="mShop('${item.id}')">✏️</button>
+          <button class="icon-btn" onclick="delI('shops','${item.id}')">🗑</button>
+        </div>
+      </div>`;
+    });
+  });
+  el.innerHTML = html;
 }
 function shopTog(id){const i=S.shops.find(s=>s.id===id);if(i){i.chk=!i.chk;save(K.shops,S.shops);rShop();}}
 
@@ -489,7 +608,8 @@ function mShop(id){
     <div class="field"><div class="fl">Название</div><input class="fi" id="fN" value="${i?esc(i.name):''}" placeholder="Например: Молоко"></div>
     <div class="g2">
       <div class="field"><div class="fl">Количество</div><input class="fi" id="fQ" value="${i?esc(i.qty??''):''}" placeholder="2 шт"></div>
-      <div class="field"><div class="fl">Заметка</div><input class="fi" id="fNote" value="${i?esc(i.note??''):''}" placeholder="Детали"></div></div>
+      <div class="field"><div class="fl">Категория</div><input class="fi" id="fCat" value="${i?esc(i.category??''):''}" placeholder="Продукты, Техника..."></div></div>
+    <div class="field"><div class="fl">Заметка</div><input class="fi" id="fNote" value="${i?esc(i.note??''):''}" placeholder="Детали"></div>
     <div class="field"><div class="fl">Ссылка</div><input class="fi" id="fL" type="url" value="${i?esc(i.link??''):''}" placeholder="https://…"></div>
     <div class="field"><div class="fl">Фото (URL картинки)</div>
       <input class="fi" id="fP" type="url" value="${i?esc(i.photo??''):''}" placeholder="https://…jpg" oninput="phPrev(this,'pp')">
@@ -499,9 +619,9 @@ function mShop(id){
 }
 function saveShop(){
   const n=q('fN').value.trim();if(!n){toast('Введи название');return;}
-  const qty=q('fQ').value.trim(),note=q('fNote').value.trim(),link=q('fL').value.trim(),photo=q('fP').value.trim();
-  if(S.editId)Object.assign(S.shops.find(s=>s.id===S.editId),{name:n,qty,note,link,photo});
-  else S.shops.push({id:uid(),name:n,qty,note,link,photo,chk:false});
+  const qty=q('fQ').value.trim(), note=q('fNote').value.trim(), link=q('fL').value.trim(), photo=q('fP').value.trim(), category=q('fCat').value.trim();
+  if(S.editId)Object.assign(S.shops.find(s=>s.id===S.editId),{name:n,qty,note,link,photo,category});
+  else S.shops.push({id:uid(),name:n,qty,note,link,photo,category,chk:false});
   save(K.shops,S.shops);closeSheet();rShop();toast(S.editId?'Сохранено ✓':'Добавлено ✓');
 }
 
@@ -510,7 +630,7 @@ function doShareShop(){
   const undone=S.shops.filter(s=>!s.chk);
   const text='📋 Список покупок:\n\n'+undone.map(s=>`☐ ${s.name}${s.qty?' ('+s.qty+')':''}${s.note?' — '+s.note:''}`).join('\n')
     +(S.shops.some(s=>s.chk)?'\n\n✅ Уже куплено:\n'+S.shops.filter(s=>s.chk).map(s=>'✓ '+s.name).join('\n'):'');
-  const ldata={items:S.shops.map(s=>({id:s.id,name:s.name,qty:s.qty,note:s.note,link:s.link,photo:s.photo,chk:false}))};
+  const ldata={items:S.shops.map(s=>({id:s.id,name:s.name,qty:s.qty,note:s.note,link:s.link,photo:s.photo,category:s.category,chk:false}))};
   const link=location.origin+location.pathname+'#sl='+enc(ldata);
   S._shopLink=link; S._shopText=text;
   openSheet('Поделиться списком',`
@@ -525,7 +645,7 @@ function doShareShop(){
 }
 
 /* ══════════════════════════════════════════════════════════════
-   WISHLIST
+   WISHLIST (без изменений)
 ══════════════════════════════════════════════════════════════ */
 const PRL={normal:'',high:'🔥 Хочу',dream:'✨ Мечта'};
 function rWish(){
@@ -702,9 +822,18 @@ function phPrev(inp,pid){const img=document.getElementById(pid);if(!img)return;i
    SHARED ACTIONS
 ══════════════════════════════════════════════════════════════ */
 function delI(sec,id){
-  const doIt=()=>{S[sec]=S[sec].filter(i=>i.id!==id);save(K[sec],S[sec]);
-    if(sec==='subs')rSubs();else if(sec==='exps')rExp();else if(sec==='shops')rShop();else rWish();
-    toast('Удалено');};
+  const doIt=()=>{
+    if(sec==='transactions'){
+      S.transactions = S.transactions.filter(i=>i.id!==id);
+      save(K.trans, S.transactions);
+      rTrans();
+    } else {
+      S[sec]=S[sec].filter(i=>i.id!==id);
+      save(K[sec], S[sec]);
+      if(sec==='subs')rSubs(); else if(sec==='shops')rShop(); else if(sec==='wishes')rWish();
+    }
+    toast('Удалено');
+  };
   if(tg)tg.showConfirm('Удалить?',ok=>ok&&doIt());else if(confirm('Удалить?'))doIt();
 }
 function openLnk(url){if(tg){try{tg.openLink(url);return;}catch{}}window.open(url,'_blank');}
