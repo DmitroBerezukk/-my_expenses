@@ -1,6 +1,16 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
+<!-- ========== GOOGLE ANALYTICS 4 (ваш ID: G-ZTPL45VLS0) ========== -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ZTPL45VLS0"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-ZTPL45VLS0', { 'anonymize_ip': true });
+</script>
+<!-- ================================================================= -->
+
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no"/>
 <title>Мои финансы</title>
@@ -261,6 +271,8 @@ if (tg){tg.ready();tg.expand();}
 
 /* ────────────────────────────────── DONATE ── */
 function openDonateLink() {
+    // GA4 событие доната
+    gtag('event', 'donate_click', { 'event_category': 'monetization', 'platform': 'Boosty' });
     const donateUrl = 'https://boosty.to/chizzayspeak/donate';
     if (tg && tg.openLink) {
         tg.openLink(donateUrl);
@@ -271,6 +283,8 @@ function openDonateLink() {
 
 /* ────────────────────────────────── CHANNEL ── */
 function openChannel() {
+    // GA4 событие открытия канала
+    gtag('event', 'channel_click', { 'event_category': 'social', 'channel': 'shoguns_notes' });
     const channelUrl = 'https://t.me/shoguns_notes';
     if (tg && tg.openLink) {
         tg.openLink(channelUrl);
@@ -372,9 +386,23 @@ function goto(tab){
   document.querySelectorAll('.nav-btn').forEach(b=>b.classList.toggle('active',b.dataset.t===tab));
   document.getElementById('hdrTitle').textContent=TAB[tab].t;
   document.getElementById('btnShare').style.display=TAB[tab].share?'flex':'none';
+
+  // GA4 событие переключения вкладки
+  gtag('event', 'tab_switch', { 'event_category': 'navigation', 'tab_name': tab });
 }
-function onAdd(){if(S.tab==='Subs')mSubs(null);else if(S.tab==='Trans')mTrans(null);else if(S.tab==='Shop')mShop(null);else mWish(null);}
-function onShare(){if(S.tab==='Shop')doShareShop();else doShareWish();}
+function onAdd(){
+  // GA4 событие клика по кнопке +
+  gtag('event', 'add_click', { 'event_category': 'engagement', 'tab': S.tab });
+
+  if(S.tab==='Subs')mSubs(null);
+  else if(S.tab==='Trans')mTrans(null);
+  else if(S.tab==='Shop')mShop(null);
+  else mWish(null);
+}
+function onShare(){
+  if(S.tab==='Shop')doShareShop();
+  else doShareWish();
+}
 
 /* ══════════════════════════════════════════════════════════════
    SUBSCRIPTIONS (добавлена ссылка)
@@ -402,7 +430,7 @@ function subCard(s){
     return `<button class="pill ${isA?'on':''} ${na?'na':''}" ${na?'disabled':`onclick="subP('${s.id}','${p}')"`}>
       ${PL[p]}<div class="pill-sub">${pr?fmt(pr)+' ₽':'—'}</div></button>`;
   }).join('');
-  const linkBtn = s.link ? `<button class="card-btn link" onclick="openLnk('${esc(s.link)}')">🔗</button>` : '';
+  const linkBtn = s.link ? `<button class="card-btn link" onclick="openLnk('${esc(s.link)}', 'subscription')">🔗</button>` : '';
   return `<div class="card ${s.active?'':'off'}">
     <div class="card-top">
       <label class="tog"><input type="checkbox" ${s.active?'checked':''} onchange="subTog('${s.id}',this.checked)"><span class="tog-tr"></span></label>
@@ -419,7 +447,12 @@ function subCard(s){
 }
 function subTog(id,v){const s=S.subs.find(s=>s.id===id);if(s){s.active=v;save(K.subs,S.subs);rSubs();}}
 function subP(id,p){const s=S.subs.find(s=>s.id===id);if(s){s.sel=p;save(K.subs,S.subs);rSubs();}}
-function setSubP(p){S.subP=p;rSubs();}
+function setSubP(p){
+  S.subP=p;
+  // GA4 событие смены периода
+  gtag('event', 'sub_period_change', { 'event_category': 'subscription', 'period': p });
+  rSubs();
+}
 function norm(price,from,to){let m=from==='month'?price:from==='year'?price/12:price/24;return to==='month'?m:to==='year'?m*12:m*24;}
 
 function mSubs(id){
@@ -443,9 +476,17 @@ function saveSubs(){
   if(!m&&!y&&!t){toast('Укажи хотя бы одну цену');return;}
   const note=q('fNote').value.trim(); const link=q('fLink').value.trim();
   const prices={month:m,year:y,two_years:t};
-  if(S.editId){const s=S.subs.find(s=>s.id===S.editId);Object.assign(s,{name:n,prices,note,link});if(!prices[s.sel])s.sel=m?'month':y?'year':'two_years';}
+  const isEdit = !!S.editId;
+  if(isEdit){const s=S.subs.find(s=>s.id===S.editId);Object.assign(s,{name:n,prices,note,link});if(!prices[s.sel])s.sel=m?'month':y?'year':'two_years';}
   else S.subs.push({id:uid(),name:n,active:true,prices,sel:m?'month':y?'year':'two_years',note,link});
-  save(K.subs,S.subs);closeSheet();rSubs();toast(S.editId?'Сохранено ✓':'Добавлено ✓');
+  save(K.subs,S.subs);closeSheet();rSubs();toast(isEdit?'Сохранено ✓':'Добавлено ✓');
+
+  // GA4 событие сохранения подписки
+  gtag('event', 'item_saved', {
+    'event_category': 'data_entry',
+    'item_type': 'subscription',
+    'action': isEdit ? 'edit' : 'add'
+  });
 }
 
 /* ══════════════════════════════════════════════════════════════
@@ -547,6 +588,7 @@ function saveTrans(){
   if(!date){toast('Укажи дату'); return;}
   const note = q('fNote').value.trim();
   const type = window._transType || 'expense';
+  const isEdit = !!S.editId;
   if(S.editId){
     const t = S.transactions.find(t=>t.id===S.editId);
     if(t){ Object.assign(t, {type, amount, category, date, note}); }
@@ -554,7 +596,14 @@ function saveTrans(){
     S.transactions.push({id:uid(), type, amount, category, date, note, active:true});
   }
   save(K.trans, S.transactions);
-  closeSheet(); rTrans(); toast(S.editId?'Сохранено ✓':'Добавлено ✓');
+  closeSheet(); rTrans(); toast(isEdit?'Сохранено ✓':'Добавлено ✓');
+
+  // GA4 событие сохранения транзакции
+  gtag('event', 'item_saved', {
+    'event_category': 'data_entry',
+    'item_type': 'transaction',
+    'action': isEdit ? 'edit' : 'add'
+  });
 }
 
 /* ══════════════════════════════════════════════════════════════
@@ -591,7 +640,7 @@ function rShop(){
         </div>
         ${item.photo?`<img class="shop-thumb" src="${esc(item.photo)}" onerror="this.style.display='none'" alt="">`:``}
         <div class="shop-acts">
-          ${item.link?`<button class="icon-btn" onclick="openLnk('${esc(item.link)}')">🔗</button>`:''}
+          ${item.link?`<button class="icon-btn" onclick="openLnk('${esc(item.link)}', 'shop')">🔗</button>`:''}
           <button class="icon-btn" onclick="mShop('${item.id}')">✏️</button>
           <button class="icon-btn" onclick="delI('shops','${item.id}')">🗑</button>
         </div>
@@ -620,9 +669,17 @@ function mShop(id){
 function saveShop(){
   const n=q('fN').value.trim();if(!n){toast('Введи название');return;}
   const qty=q('fQ').value.trim(), note=q('fNote').value.trim(), link=q('fL').value.trim(), photo=q('fP').value.trim(), category=q('fCat').value.trim();
-  if(S.editId)Object.assign(S.shops.find(s=>s.id===S.editId),{name:n,qty,note,link,photo,category});
+  const isEdit = !!S.editId;
+  if(isEdit)Object.assign(S.shops.find(s=>s.id===S.editId),{name:n,qty,note,link,photo,category});
   else S.shops.push({id:uid(),name:n,qty,note,link,photo,category,chk:false});
-  save(K.shops,S.shops);closeSheet();rShop();toast(S.editId?'Сохранено ✓':'Добавлено ✓');
+  save(K.shops,S.shops);closeSheet();rShop();toast(isEdit?'Сохранено ✓':'Добавлено ✓');
+
+  // GA4 событие сохранения покупки
+  gtag('event', 'item_saved', {
+    'event_category': 'data_entry',
+    'item_type': 'shop',
+    'action': isEdit ? 'edit' : 'add'
+  });
 }
 
 function doShareShop(){
@@ -642,6 +699,9 @@ function doShareShop(){
     <div class="link-box">${link.length>80?link.slice(0,80)+'…':link}</div>
     <button class="btn-p" onclick="cpyTxt(S._shopLink,'Ссылка скопирована!')">📋 Скопировать ссылку</button>
     <button class="btn-s" onclick="closeSheet()">Закрыть</button>`);
+
+  // GA4 событие шаринга списка покупок
+  gtag('event', 'share_click', { 'event_category': 'sharing', 'share_type': 'shop' });
 }
 
 /* ══════════════════════════════════════════════════════════════
@@ -669,7 +729,7 @@ function rWish(){
         ${w.bookings?.length?`<div class="card-note" style="margin-bottom:8px">Бронируют: ${w.bookings.map(b=>esc(b.name)).join(', ')}</div>`:''}
         <div class="wish-footer">
           <button class="vis-btn" onclick="wishVis('${w.id}')" title="${w.vis?'Скрыть':'Показать'}">${w.vis?'👁':'🙈'}</button>
-          ${w.link?`<button class="card-btn e" style="flex:0;padding:8px 12px" onclick="openLnk('${esc(w.link)}')">🔗</button>`:''}
+          ${w.link?`<button class="card-btn e" style="flex:0;padding:8px 12px" onclick="openLnk('${esc(w.link)}', 'wish')">🔗</button>`:''}
           <button class="card-btn e" style="flex:1" onclick="mWish('${w.id}')">✏️ Изменить</button>
           <button class="card-btn d" style="flex:0;padding:8px 12px" onclick="delI('wishes','${w.id}')">🗑</button>
         </div></div></div>`;
@@ -711,9 +771,17 @@ function saveWish(){
   const desc=q('fD').value.trim(),price=pn(q('fPr').value),maxBook=parseInt(q('fMB').value)||1;
   const link=q('fL').value.trim(),photo=q('fPh').value.trim();
   const hidePrice=q('chHP').checked,vis=q('chV').checked;
-  if(S.editId){const w=S.wishes.find(w=>w.id===S.editId);Object.assign(w,{name:n,desc,price,maxBook,link,photo,hidePrice,vis,priority:S.wPriority});}
+  const isEdit = !!S.editId;
+  if(isEdit){const w=S.wishes.find(w=>w.id===S.editId);Object.assign(w,{name:n,desc,price,maxBook,link,photo,hidePrice,vis,priority:S.wPriority});}
   else S.wishes.push({id:uid(),name:n,desc,price,maxBook,link,photo,hidePrice,vis,priority:S.wPriority,bookings:[]});
-  save(K.wishes,S.wishes);closeSheet();rWish();toast(S.editId?'Сохранено ✓':'Добавлено ✓');
+  save(K.wishes,S.wishes);closeSheet();rWish();toast(isEdit?'Сохранено ✓':'Добавлено ✓');
+
+  // GA4 событие сохранения желания
+  gtag('event', 'item_saved', {
+    'event_category': 'data_entry',
+    'item_type': 'wish',
+    'action': isEdit ? 'edit' : 'add'
+  });
 }
 
 function doShareWish(){
@@ -727,6 +795,9 @@ function doShareWish(){
     <button class="btn-p" onclick="cpyTxt(S._wishLink,'Ссылка скопирована!')">📋 Скопировать ссылку</button>
     <div style="font-size:12px;color:var(--hint);margin-top:8px">Друзья увидят список и смогут забронировать подарки.<br>Скрытые позиции (🙈) не попадут в ссылку.</div>
     <button class="btn-s" onclick="closeSheet()">Закрыть</button>`);
+
+  // GA4 событие шаринга вишлиста
+  gtag('event', 'share_click', { 'event_category': 'sharing', 'share_type': 'wish' });
 }
 
 /* ══════════════════════════════════════════════════════════════
@@ -750,7 +821,7 @@ function showSVWish(data){
         ${w.desc?`<div class="wish-desc">${esc(w.desc)}</div>`:''}
         ${w.price&&!w.hidePrice?`<div class="wish-price">${fmt(w.price)} ₽</div>`:''}
         <div class="wish-footer">
-          ${w.link?`<button class="card-btn e" style="flex:0;padding:8px 12px" onclick="openLnk('${esc(w.link)}')">🔗 Ссылка</button>`:''}
+          ${w.link?`<button class="card-btn e" style="flex:0;padding:8px 12px" onclick="openLnk('${esc(w.link)}', 'wish')">🔗 Ссылка</button>`:''}
           ${full
             ?`<button class="card-btn e" style="flex:1;opacity:.5" disabled>Уже бронируют</button>`
             :`<button class="btn-p" style="margin:0;flex:1;padding:10px;border-radius:10px" data-wish="${esc(w.name)}" onclick="openBooking(this,'${esc(w.name)}')">🎁 Забронировать</button>`}
@@ -797,7 +868,7 @@ function showSVShop(data){
           ${item.note?`<div class="shop-meta">${esc(item.note)}</div>`:''}
         </div>
         ${item.photo?`<img class="shop-thumb" src="${esc(item.photo)}" onerror="this.style.display='none'" alt="">`:``}
-        <div class="shop-acts">${item.link?`<button class="icon-btn" onclick="openLnk('${esc(item.link)}')">🔗</button>`:''}</div>
+        <div class="shop-acts">${item.link?`<button class="icon-btn" onclick="openLnk('${esc(item.link)}', 'shop')">🔗</button>`:''}</div>
       </div>`).join('');
     window.slTog=id=>{const i=st.find(s=>s.id===id);if(i){i.chk=!i.chk;renderSL();}};
   }
@@ -823,20 +894,38 @@ function phPrev(inp,pid){const img=document.getElementById(pid);if(!img)return;i
 ══════════════════════════════════════════════════════════════ */
 function delI(sec,id){
   const doIt=()=>{
+    let itemType = '';
     if(sec==='transactions'){
       S.transactions = S.transactions.filter(i=>i.id!==id);
       save(K.trans, S.transactions);
+      itemType = 'transaction';
       rTrans();
     } else {
-      S[sec]=S[sec].filter(i=>i.id!==id);
+      const oldLen = S[sec].length;
+      S[sec] = S[sec].filter(i=>i.id!==id);
       save(K[sec], S[sec]);
-      if(sec==='subs')rSubs(); else if(sec==='shops')rShop(); else if(sec==='wishes')rWish();
+      if(sec==='subs'){ itemType='subscription'; rSubs(); }
+      else if(sec==='shops'){ itemType='shop'; rShop(); }
+      else if(sec==='wishes'){ itemType='wish'; rWish(); }
     }
     toast('Удалено');
+
+    // GA4 событие удаления
+    gtag('event', 'item_deleted', {
+      'event_category': 'data_entry',
+      'item_type': itemType
+    });
   };
   if(tg)tg.showConfirm('Удалить?',ok=>ok&&doIt());else if(confirm('Удалить?'))doIt();
 }
-function openLnk(url){if(tg){try{tg.openLink(url);return;}catch{}}window.open(url,'_blank');}
+function openLnk(url, source){
+  // GA4 событие открытия ссылки, если передан source
+  if(source){
+    gtag('event', 'link_open', { 'event_category': 'subscription', 'source': source });
+  }
+  if(tg){try{tg.openLink(url);return;}catch{}}
+  window.open(url,'_blank');
+}
 
 /* ══════════════════════════════════════════════════════════════
    UTILS
